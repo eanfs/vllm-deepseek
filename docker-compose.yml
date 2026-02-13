@@ -7,25 +7,28 @@ services:
       dockerfile: Dockerfile
     container_name: deepseek-ocr2-vllm
     runtime: nvidia
+    # 临时使用 privileged 模式以排查 cgroups 权限问题
+    privileged: true
+    ipc: host
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
+      # 模型配置
       - MODEL_ID=deepseek-ai/DeepSeek-OCR-2
       - MODELSCOPE_CACHE=/models
       - GPU_MEMORY_UTILIZATION=0.9
       - MAX_MODEL_LEN=8192
       - HF_ENDPOINT=https://hf-mirror.com
-      # 可选：使用镜像加速
-      - HF_HUB_ENABLE_HF_TRANSFER=1
     ports:
       - "8000:8000"
     volumes:
       - ./models:/models
     shm_size: '16gb'
     restart: unless-stopped
+    
+    # GPU 资源配置（使用 deploy 方式分配 GPU）
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: all
+              count: 1
               capabilities: [gpu]

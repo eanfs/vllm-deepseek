@@ -1,13 +1,9 @@
-# 使用 vLLM 0.8.5 官方镜像
-FROM vllm/vllm-openai:v0.8.5
+FROM vllm/vllm-openai:latest
 
 WORKDIR /app
 
 # 安装 modelscope
-RUN pip install modelscope --no-deps
-
-# 安装 modelscope 依赖（避免版本冲突）
-RUN pip install tqdm requests pyyaml sortedcontainers addict yapf attrs
+RUN pip install modelscope --break-system-packages
 
 # 设置环境变量
 ENV MODELSCOPE_CACHE=/models
