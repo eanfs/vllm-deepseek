@@ -1,0 +1,29 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: deepseek-ocr2-modelscope
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8000}:8000"
+    volumes:
+      - ${MODELSCOPE_MODEL_DIR:-./models/deepseek-ai/DeepSeek-OCR-2}:/model
+      - ./start_vllm.sh:/start_vllm.sh
+    environment:
+      - VLLM_LOGGING_LEVEL=${VLLM_LOGGING_LEVEL:-INFO}
+      - MAX_MODEL_LEN=${MAX_MODEL_LEN:-8192}
+      - GPU_MEMORY_UTILIZATION=${GPU_MEMORY_UTILIZATION:-0.90}
+    ipc: host
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_COUNT:-all}
+              capabilities: [gpu]
+    entrypoint: ["bash", "/start_vllm.sh"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
