@@ -123,19 +123,26 @@ test_local_image() {
     local start_time
     start_time=$(date +%s)
     
+    # 使用临时文件传递JSON，避免命令行参数过长（base64数据可能很大）
+    local request_file="/tmp/ocr_request_$$.json"
+    printf '%s' "{
+        \"model\": \"${MODEL_NAME}\",
+        \"messages\": [{\"role\": \"user\", \"content\": [
+            {\"type\": \"image_url\", \"image_url\": {\"url\": \"data:${mime_type};base64,${base64_data}\"}},
+            {\"type\": \"text\", \"text\": \"${prompt}\"}
+        ]}],
+        \"max_tokens\": ${MAX_TOKENS},
+        \"temperature\": 0.0
+    }" > "$request_file"
+    
     local http_code
     http_code=$(curl -s -o /tmp/ocr_response.json -w "%{http_code}" \
         -X POST "${API_BASE}/v1/chat/completions" \
         -H "Content-Type: application/json" \
-        -d "{
-            \"model\": \"${MODEL_NAME}\",
-            \"messages\": [{\"role\": \"user\", \"content\": [
-                {\"type\": \"image_url\", \"image_url\": {\"url\": \"data:${mime_type};base64,${base64_data}\"}},
-                {\"type\": \"text\", \"text\": \"${prompt}\"}
-            ]}],
-            \"max_tokens\": ${MAX_TOKENS},
-            \"temperature\": 0.0
-        }" 2>/dev/null || echo "000")
+        -d @"${request_file}" 2>/dev/null || echo "000")
+    
+    # 清理临时文件
+    rm -f "$request_file"
     
     local elapsed=$(( $(date +%s) - start_time ))
     
