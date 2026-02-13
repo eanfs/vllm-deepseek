@@ -12,11 +12,13 @@ services:
     ipc: host
     environment:
       # 模型配置
-      - MODEL_ID=deepseek-ai/DeepSeek-OCR
+      - MODEL_ID=unsloth/DeepSeek-OCR-2-bf16
       - MODELSCOPE_CACHE=/models
-      - GPU_MEMORY_UTILIZATION=0.9
-      - MAX_MODEL_LEN=8192
+      - GPU_MEMORY_UTILIZATION=0.65
+      - MAX_MODEL_LEN=4096
       - HF_ENDPOINT=https://hf-mirror.com
+      - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+      - EXTRA_ARGS=--enforce-eager
     ports:
       - "8000:8000"
     volumes:
