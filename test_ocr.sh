@@ -5,7 +5,7 @@
 #   bash test_ocr.sh                    # 使用默认远程图片
 #   bash test_ocr.sh local              # 使用本地 frames/ 目录图片
 #   bash test_ocr.sh local 5            # 只测试前 5 张
-#   MODEL_NAME=unsloth/DeepSeek-OCR-2-bf16 bash test_ocr.sh  # 自定义模型
+#   MODEL_NAME=deepseek-ai/DeepSeek-OCR bash test_ocr.sh  # 自定义模型
 #
 
 set -euo pipefail
@@ -14,7 +14,7 @@ set -euo pipefail
 MODE="${1:-remote}"
 LIMIT="${2:-0}"  # 0 表示不限制
 API_BASE="${VLLM_API_URL:-http://localhost:8000}"
-MODEL_NAME="${MODEL_NAME:-unsloth/DeepSeek-OCR-2-bf16}"
+MODEL_NAME="${MODEL_NAME:-deepseek-ai/DeepSeek-OCR}"
 MAX_TOKENS="${MAX_TOKENS:-4096}"
 TIMEOUT="${TIMEOUT:-120}"
 

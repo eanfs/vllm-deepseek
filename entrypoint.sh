@@ -100,7 +100,7 @@ python3 -c "import torch; exit(0 if torch.cuda.is_available() else 1)" || {
 echo "✓ CUDA 初始化成功"
 
 # 配置
-MODEL_ID="${MODEL_ID:-unsloth/DeepSeek-OCR-2-bf16}"
+MODEL_ID="${MODEL_ID:-deepseek-ai/DeepSeek-OCR}"
 CACHE_DIR="${MODELSCOPE_CACHE:-/models}"
 
 echo "模型 ID: $MODEL_ID"
@@ -154,14 +154,16 @@ echo "-----------------------------------"
 
 # 启动 vLLM
 # 禁用 Flash Attention，使用 eager 模式（兼容老显卡）
+# 使用 8 卡 Tensor Parallel
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
 exec python3 -m vllm.entrypoints.openai.api_server \
     --model "$MODEL_PATH" \
     --trust-remote-code \
-    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION:-0.65}" \
-    --max-model-len "${MAX_MODEL_LEN:-4096}" \
+    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION:-0.85}" \
+    --max-model-len "${MAX_MODEL_LEN:-8192}" \
     --enforce-eager \
+    --tensor-parallel-size 8 \
     --host 0.0.0.0 \
     --port 8000 \
     ${EXTRA_ARGS}

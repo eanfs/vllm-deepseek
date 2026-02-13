@@ -12,13 +12,14 @@ services:
     ipc: host
     environment:
       # 模型配置
-      - MODEL_ID=unsloth/DeepSeek-OCR-2-bf16
+      - MODEL_ID=deepseek-ai/DeepSeek-OCR
       - MODELSCOPE_CACHE=/models
-      - GPU_MEMORY_UTILIZATION=0.65
-      - MAX_MODEL_LEN=4096
+      - GPU_MEMORY_UTILIZATION=0.85
+      - MAX_MODEL_LEN=8192
       - HF_ENDPOINT=https://hf-mirror.com
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-      - EXTRA_ARGS=--enforce-eager
+      - EXTRA_ARGS=--enforce-eager --tensor-parallel-size=8
+      - TENSOR_PARALLEL_SIZE=8
     ports:
       - "8000:8000"
     volumes:
@@ -26,11 +27,11 @@ services:
     shm_size: '16gb'
     restart: unless-stopped
     
-    # GPU 资源配置（使用 deploy 方式分配 GPU）
+    # GPU 资源配置（使用 8 张卡）
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: 8
               capabilities: [gpu]
