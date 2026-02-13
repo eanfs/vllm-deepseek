@@ -160,10 +160,10 @@ export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 exec python3 -m vllm.entrypoints.openai.api_server \
     --model "$MODEL_PATH" \
     --trust-remote-code \
-    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION:-0.85}" \
+    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION:-0.75}" \
     --max-model-len "${MAX_MODEL_LEN:-8192}" \
     --enforce-eager \
-    --tensor-parallel-size 8 \
+    --tensor-parallel-size 2 \
     --host 0.0.0.0 \
     --port 8000 \
     ${EXTRA_ARGS}

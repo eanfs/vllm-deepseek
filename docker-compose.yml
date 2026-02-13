@@ -14,12 +14,12 @@ services:
       # 模型配置
       - MODEL_ID=deepseek-ai/DeepSeek-OCR
       - MODELSCOPE_CACHE=/models
-      - GPU_MEMORY_UTILIZATION=0.85
+      - GPU_MEMORY_UTILIZATION=0.75
       - MAX_MODEL_LEN=8192
       - HF_ENDPOINT=https://hf-mirror.com
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-      - EXTRA_ARGS=--enforce-eager --tensor-parallel-size=8
-      - TENSOR_PARALLEL_SIZE=8
+      - EXTRA_ARGS=--enforce-eager --tensor-parallel-size=2
+      - TENSOR_PARALLEL_SIZE=2
     ports:
       - "8000:8000"
     volumes:
