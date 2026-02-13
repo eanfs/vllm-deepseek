@@ -2,7 +2,7 @@
 set -e
 
 echo "==================================="
-echo "DeepSeek-OCR-2 vLLM 启动"
+echo "DeepSeek-OCR vLLM 启动"
 echo "==================================="
 
 # GPU 诊断
@@ -100,7 +100,7 @@ python3 -c "import torch; exit(0 if torch.cuda.is_available() else 1)" || {
 echo "✓ CUDA 初始化成功"
 
 # 配置
-MODEL_ID="${MODEL_ID:-deepseek-ai/DeepSeek-OCR-2}"
+MODEL_ID="${MODEL_ID:-deepseek-ai/DeepSeek-OCR}"
 CACHE_DIR="${MODELSCOPE_CACHE:-/models}"
 
 echo "模型 ID: $MODEL_ID"
@@ -111,7 +111,7 @@ python3 << 'PYEOF'
 import os
 from modelscope import snapshot_download
 
-model_id = os.environ.get('MODEL_ID', 'deepseek-ai/DeepSeek-OCR-2')
+model_id = os.environ.get('MODEL_ID', 'deepseek-ai/DeepSeek-OCR')
 cache_dir = os.environ.get('MODELSCOPE_CACHE', '/models')
 
 model_path = f"{cache_dir}/{model_id}"

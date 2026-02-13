@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-DeepSeek-OCR-2 测试脚本
+DeepSeek-OCR 测试脚本
 
 使用方法:
     python test_ocr2.py
@@ -11,7 +11,7 @@ from openai import OpenAI
 
 # 配置
 BASE_URL = os.getenv("VLLM_API_URL", "http://localhost:8000/v1")
-MODEL_NAME = os.getenv("VLLM_MODEL_NAME", "deepseek-ai/DeepSeek-OCR-2")
+MODEL_NAME = os.getenv("VLLM_MODEL_NAME", "deepseek-ai/DeepSeek-OCR")
 
 
 def test_ocr():

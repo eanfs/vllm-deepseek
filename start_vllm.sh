@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "安装 DeepSeek-OCR-2 依赖..."
+echo "安装 DeepSeek-OCR 依赖..."
 pip3 install -q addict easydict
 
 echo "启动 vLLM API 服务器..."

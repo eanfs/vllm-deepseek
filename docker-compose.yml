@@ -12,7 +12,7 @@ services:
     ipc: host
     environment:
       # 模型配置
-      - MODEL_ID=deepseek-ai/DeepSeek-OCR-2
+      - MODEL_ID=deepseek-ai/DeepSeek-OCR
       - MODELSCOPE_CACHE=/models
       - GPU_MEMORY_UTILIZATION=0.9
       - MAX_MODEL_LEN=8192

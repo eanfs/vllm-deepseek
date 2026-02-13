@@ -16,5 +16,5 @@ def download_model(model_id, cache_dir='/root/.cache/modelscope'):
 
 if __name__ == "__main__":
     import sys
-    model_id = sys.argv[1] if len(sys.argv) > 1 else "deepseek-ai/DeepSeek-OCR-2"
+    model_id = sys.argv[1] if len(sys.argv) > 1 else "deepseek-ai/DeepSeek-OCR"
     download_model(model_id)
