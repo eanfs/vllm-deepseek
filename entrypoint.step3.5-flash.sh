@@ -106,10 +106,10 @@ CACHE_DIR="${MODELSCOPE_CACHE:-/models}"
 echo "模型 ID: $MODEL_ID"
 echo "缓存目录: $CACHE_DIR"
 
-# 下载模型
+# 下载模型 (使用 ModelScope)
 python3 << 'PYEOF'
 import os
-from huggingface_hub import snapshot_download
+from modelscope import snapshot_download
 
 model_id = os.environ.get('MODEL_ID', 'stepfun-ai/Step-3.5-Flash')
 cache_dir = os.environ.get('MODELSCOPE_CACHE', '/models')
@@ -120,12 +120,13 @@ if not os.path.exists(model_path):
     print(f"下载模型: {model_id}")
     try:
         downloaded_path = snapshot_download(
-            repo_id=model_id,
-            cache_dir=cache_dir
+            model_id, 
+            cache_dir=cache_dir,
+            revision='master'
         )
         print(f"✓ 模型下载成功: {downloaded_path}")
     except Exception as e:
-        print(f"✗ HuggingFace 下载失败: {e}")
+        print(f"✗ ModelScope 下载失败: {e}")
         exit(1)
 else:
     print(f"✓ 模型已存在: {model_path}")
