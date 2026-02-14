@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  deepseek-ocr2:
+  deepseek-ocr:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: deepseek-ocr2-vllm
+    container_name: deepseek-ocr-vllm
     runtime: nvidia
     # 临时使用 privileged 模式以排查 cgroups 权限问题
     privileged: true

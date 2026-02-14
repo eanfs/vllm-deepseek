@@ -5,7 +5,7 @@
 version: '3.8'
 
 services:
-  deepseek-ocr2:
+  step3p5-flash:
     container_name: step3p5-flash-vllm
     entrypoint: ["/app/entrypoint.step3.5-flash.sh"]
     environment:
