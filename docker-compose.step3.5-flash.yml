@@ -1,0 +1,29 @@
+# Step-3.5-Flash docker-compose 覆盖配置
+# 使用方式: docker compose -f docker-compose.yml -f docker-compose.step3.5-flash.yml up -d
+# 恢复 DeepSeek OCR: docker compose -f docker-compose.yml up -d
+
+version: '3.8'
+
+services:
+  deepseek-ocr2:
+    container_name: step3p5-flash-vllm
+    entrypoint: ["/app/entrypoint.step3.5-flash.sh"]
+    environment:
+      # Step-3.5-Flash 模型配置
+      - MODEL_ID=stepfun-ai/Step-3.5-Flash
+      - GPU_MEMORY_UTILIZATION=0.90
+      - MAX_MODEL_LEN=32768
+      - TENSOR_PARALLEL_SIZE=4
+      # Step-3.5-Flash FP8 版本不支持 TP4，请使用 DP4
+      # 如需使用 FP8 版本，改为:
+      # - MODEL_ID=stepfun-ai/Step-3.5-Flash-FP8
+      # - TENSOR_PARALLEL_SIZE=1
+    volumes:
+      - ./entrypoint.step3.5-flash.sh:/app/entrypoint.step3.5-flash.sh:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 4
+              capabilities: [gpu]

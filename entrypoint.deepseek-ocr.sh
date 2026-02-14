@@ -152,55 +152,21 @@ echo "-----------------------------------"
 echo "启动 vLLM 服务..."
 echo "-----------------------------------"
 
-# 配置模型类型参数
-MODEL_TYPE="${MODEL_TYPE:-deepseek-ocr}"
+# 配置参数
 TENSOR_PARALLEL_SIZE="${TENSOR_PARALLEL_SIZE:-2}"
 
-echo "模型类型: $MODEL_TYPE"
 echo "Tensor Parallel Size: $TENSOR_PARALLEL_SIZE"
 
-# 构建 vLLM 启动参数
-VLLM_ARGS=(
-    --model "$MODEL_PATH"
-    --trust-remote-code
-    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION:-0.75}"
-    --max-model-len "${MAX_MODEL_LEN:-8192}"
-    --tensor-parallel-size "$TENSOR_PARALLEL_SIZE"
-    --host 0.0.0.0
-    --port 8000
-)
-
-# 根据模型类型添加特定参数
-case "$MODEL_TYPE" in
-    step3p5-flash)
-        echo "配置 Step-3.5-Flash 特定参数..."
-        VLLM_ARGS+=(
-            --reasoning-parser step3p5
-            --tool-call-parser step3p5
-            --enable-auto-tool-choice
-        )
-        # 可选: 启用 MTP (Multi-Token Prediction) 以提升推理速度
-        # VLLM_ARGS+=(
-        #     --hf-overrides '{"num_nextn_predict_layers": 1}'
-        #     --speculative-config '{"method": "step3p5_mtp", "num_speculative_tokens": 1}'
-        # )
-        ;;
-    deepseek-ocr|*)
-        echo "配置 DeepSeek-OCR 特定参数..."
-        # DeepSeek OCR 需要禁用 Flash Attention 以兼容老显卡
-        VLLM_ARGS+=(--enforce-eager)
-        ;;
-esac
-
-# 添加额外参数
-if [ -n "$EXTRA_ARGS" ]; then
-    echo "额外参数: $EXTRA_ARGS"
-    VLLM_ARGS+=($EXTRA_ARGS)
-fi
-
-echo "vLLM 启动参数: ${VLLM_ARGS[*]}"
-
-# 启动 vLLM
+# 启动 vLLM (DeepSeek-OCR 需要禁用 Flash Attention 以兼容老显卡)
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-exec python3 -m vllm.entrypoints.openai.api_server "${VLLM_ARGS[@]}"
+exec python3 -m vllm.entrypoints.openai.api_server \
+    --model "$MODEL_PATH" \
+    --trust-remote-code \
+    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION:-0.75}" \
+    --max-model-len "${MAX_MODEL_LEN:-8192}" \
+    --enforce-eager \
+    --tensor-parallel-size "$TENSOR_PARALLEL_SIZE" \
+    --host 0.0.0.0 \
+    --port 8000 \
+    ${EXTRA_ARGS}

@@ -10,6 +10,7 @@ services:
     # 临时使用 privileged 模式以排查 cgroups 权限问题
     privileged: true
     ipc: host
+    entrypoint: ["/app/entrypoint.deepseek-ocr.sh"]
     environment:
       # 模型配置
       - MODEL_ID=deepseek-ai/DeepSeek-OCR
@@ -18,12 +19,12 @@ services:
       - MAX_MODEL_LEN=8192
       - HF_ENDPOINT=https://hf-mirror.com
       - PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
-      - EXTRA_ARGS=--enforce-eager --tensor-parallel-size=2
       - TENSOR_PARALLEL_SIZE=2
     ports:
       - "8000:8000"
     volumes:
       - ./models:/models
+      - ./entrypoint.deepseek-ocr.sh:/app/entrypoint.deepseek-ocr.sh:ro
     shm_size: '16gb'
     restart: unless-stopped
     

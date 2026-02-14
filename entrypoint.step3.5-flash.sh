@@ -2,7 +2,7 @@
 set -e
 
 echo "==================================="
-echo "DeepSeek-OCR vLLM 启动"
+echo "Step-3.5-Flash vLLM 启动"
 echo "==================================="
 
 # GPU 诊断
@@ -100,7 +100,7 @@ python3 -c "import torch; exit(0 if torch.cuda.is_available() else 1)" || {
 echo "✓ CUDA 初始化成功"
 
 # 配置
-MODEL_ID="${MODEL_ID:-deepseek-ai/DeepSeek-OCR}"
+MODEL_ID="${MODEL_ID:-stepfun-ai/Step-3.5-Flash}"
 CACHE_DIR="${MODELSCOPE_CACHE:-/models}"
 
 echo "模型 ID: $MODEL_ID"
@@ -109,9 +109,9 @@ echo "缓存目录: $CACHE_DIR"
 # 下载模型
 python3 << 'PYEOF'
 import os
-from modelscope import snapshot_download
+from huggingface_hub import snapshot_download
 
-model_id = os.environ.get('MODEL_ID', 'deepseek-ai/DeepSeek-OCR')
+model_id = os.environ.get('MODEL_ID', 'stepfun-ai/Step-3.5-Flash')
 cache_dir = os.environ.get('MODELSCOPE_CACHE', '/models')
 
 model_path = f"{cache_dir}/{model_id}"
@@ -120,26 +120,19 @@ if not os.path.exists(model_path):
     print(f"下载模型: {model_id}")
     try:
         downloaded_path = snapshot_download(
-            model_id, 
-            cache_dir=cache_dir,
-            revision='master'
-        )
-        print(f"✓ 模型下载成功: {downloaded_path}")
-    except Exception as e:
-        print(f"✗ ModelScope 下载失败: {e}")
-        print("尝试从 HuggingFace 下载...")
-        from huggingface_hub import snapshot_download as hf_download
-        downloaded_path = hf_download(
             repo_id=model_id,
             cache_dir=cache_dir
         )
-        print(f"✓ HuggingFace 下载成功: {downloaded_path}")
+        print(f"✓ 模型下载成功: {downloaded_path}")
+    except Exception as e:
+        print(f"✗ HuggingFace 下载失败: {e}")
+        exit(1)
 else:
     print(f"✓ 模型已存在: {model_path}")
 PYEOF
 
 # 查找模型路径
-MODEL_PATH=$(find $CACHE_DIR -type f -name "config.json" | grep -i deepseek-ocr | head -1 | xargs dirname)
+MODEL_PATH=$(find $CACHE_DIR -type f -name "config.json" | grep -i stepfun | head -1 | xargs dirname)
 
 if [ -z "$MODEL_PATH" ]; then
     echo "✗ 未找到模型文件！"
@@ -152,55 +145,28 @@ echo "-----------------------------------"
 echo "启动 vLLM 服务..."
 echo "-----------------------------------"
 
-# 配置模型类型参数
-MODEL_TYPE="${MODEL_TYPE:-deepseek-ocr}"
-TENSOR_PARALLEL_SIZE="${TENSOR_PARALLEL_SIZE:-2}"
+# 配置参数
+TENSOR_PARALLEL_SIZE="${TENSOR_PARALLEL_SIZE:-4}"
 
-echo "模型类型: $MODEL_TYPE"
 echo "Tensor Parallel Size: $TENSOR_PARALLEL_SIZE"
 
-# 构建 vLLM 启动参数
-VLLM_ARGS=(
-    --model "$MODEL_PATH"
-    --trust-remote-code
-    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION:-0.75}"
-    --max-model-len "${MAX_MODEL_LEN:-8192}"
-    --tensor-parallel-size "$TENSOR_PARALLEL_SIZE"
-    --host 0.0.0.0
-    --port 8000
-)
-
-# 根据模型类型添加特定参数
-case "$MODEL_TYPE" in
-    step3p5-flash)
-        echo "配置 Step-3.5-Flash 特定参数..."
-        VLLM_ARGS+=(
-            --reasoning-parser step3p5
-            --tool-call-parser step3p5
-            --enable-auto-tool-choice
-        )
-        # 可选: 启用 MTP (Multi-Token Prediction) 以提升推理速度
-        # VLLM_ARGS+=(
-        #     --hf-overrides '{"num_nextn_predict_layers": 1}'
-        #     --speculative-config '{"method": "step3p5_mtp", "num_speculative_tokens": 1}'
-        # )
-        ;;
-    deepseek-ocr|*)
-        echo "配置 DeepSeek-OCR 特定参数..."
-        # DeepSeek OCR 需要禁用 Flash Attention 以兼容老显卡
-        VLLM_ARGS+=(--enforce-eager)
-        ;;
-esac
-
-# 添加额外参数
-if [ -n "$EXTRA_ARGS" ]; then
-    echo "额外参数: $EXTRA_ARGS"
-    VLLM_ARGS+=($EXTRA_ARGS)
-fi
-
-echo "vLLM 启动参数: ${VLLM_ARGS[*]}"
-
-# 启动 vLLM
+# 启动 vLLM (Step-3.5-Flash 特定参数)
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
 
-exec python3 -m vllm.entrypoints.openai.api_server "${VLLM_ARGS[@]}"
+exec python3 -m vllm.entrypoints.openai.api_server \
+    --model "$MODEL_PATH" \
+    --trust-remote-code \
+    --gpu-memory-utilization "${GPU_MEMORY_UTILIZATION:-0.90}" \
+    --max-model-len "${MAX_MODEL_LEN:-32768}" \
+    --tensor-parallel-size "$TENSOR_PARALLEL_SIZE" \
+    --reasoning-parser step3p5 \
+    --tool-call-parser step3p5 \
+    --enable-auto-tool-choice \
+    --host 0.0.0.0 \
+    --port 8000 \
+    ${EXTRA_ARGS}
+
+# 可选: 启用 MTP (Multi-Token Prediction) 以提升推理速度
+# 添加以下参数:
+# --hf-overrides '{"num_nextn_predict_layers": 1}'
+# --speculative-config '{"method": "step3p5_mtp", "num_speculative_tokens": 1}'
